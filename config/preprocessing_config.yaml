@@ -1,0 +1,41 @@
+dataset:
+  source: huggingface
+  name: ealvaradob/phishing-dataset
+  subset: combined_reduced  # opțiuni posibile: combined, combined_reduced, email, sms, url, html
+  text_field: text          # va fi confirmat după inspectarea subsetului
+  label_field: label        # poate varia (label/target/class) – se validează în EDA
+
+preprocessing:
+  lowercase: false          # păstrează cazarea originală; se poate activa ulterior
+  strip_html: true          # curățare HTML → text (unde e cazul)
+  remove_urls: false        # NU elimina URL-urile, sunt informative pentru phishing
+  remove_duplicates: true   # elimină texte duplicate
+  max_length: 512           # pentru modele transformer (tokenizare ulterioară)
+  normalize_whitespace: true
+
+missing_values:
+  drop_empty_text: true     # elimină înregistrările fără text
+
+outliers:
+  length_clip:
+    enabled: false
+    max_chars: 2000
+
+split:
+  train: 0.8
+  validation: 0.1
+  test: 0.1
+  stratify: true            # menține raportul claselor
+  random_seed: 42
+  shuffle: true
+
+save_paths:
+  processed_dir: data/processed
+  train_dir: data/train
+  validation_dir: data/validation
+  test_dir: data/test
+
+logging:
+  level: INFO
+  save_reports: true
+  reports_dir: docs/datasets
