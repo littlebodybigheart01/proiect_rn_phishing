@@ -8,7 +8,7 @@ import google.generativeai as genai
 from tqdm import tqdm
 
 # --- CONFIGURARE ---
-API_KEY = "AIzaSyDjLbjokYwT2yClYhNTkUmDnTB-0naQ_f8"
+API_KEY = "API-ul tau"
 TARGET_COUNT = 10000  # Câte vrei? (ex: 10.000)
 BATCH_SIZE = 25  # Cerem 25 o dată (maxim safe pentru a nu tăia JSON-ul)
 OUTPUT_FILE = os.path.join("data", "raw", "phishing_ai_massive.csv")
