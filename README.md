@@ -1,234 +1,133 @@
-# README – Proiect RN: Analiza și Pregătirea Datelor (Etapa 3)
+# README - Etapa 3: Analiza și Pregătirea Setului de Date pentru Rețele Neuronale
 
-Acesta este SINGURUL README al proiectului (documentația unificată). Orice alte fișiere README din subfoldere sunt considerate secundare și pot fi ignorate.
+**Disciplina:** Rețele Neuronale
 
-—
+**Instituție:** POLITEHNICA București - FIIR
 
-Disciplina: Rețele Neuronale  
-Instituție: POLITEHNICA București – FIIR  
-Student: Chelu Fabian-Cătălin  
-Data: 2025-11-21
+**Student:** Chelu Fabian-Catalin
 
-—
+**Data:** 28.11.2025
 
-## 1) Prezentare pe scurt
-Etapa 3 pregătește setul de date pentru antrenarea unui model de Rețele Neuronale: colectare/încărcare, analiză exploratorie (EDA), preprocesare și împărțire în train/validation/test. Pipeline-ul este reproductibil, configurabil prin `config/preprocessing_config.yaml`, iar rezultatele sunt salvate în `data/` și documentate în `docs/datasets/`.
+## Introducere
 
-—
+Acest document descrie activitățile realizate în **Etapa 3**, în care se analizează și se preprocesează setul de date necesar proiectului „Rețele Neuronale" (Detectarea Phishing-ului în mesaje text). Scopul etapei este pregătirea corectă a datelor pentru instruirea modelului RN (bazat pe arhitectura DistilBERT), respectând bunele practici privind calitatea, consistența și reproductibilitatea datelor.
 
-## 2) Cerințe de sistem
-- Python 3.9+ (recomandat 3.10/3.11)
-- Dependențe Python:
-```
-pip install -r requirements.txt
-```
+## 1\. Structura Repository-ului Github (versiunea Etapei 3)
 
-Opțional (recomandat): mediu virtual
-- Linux/macOS:
-```
-python3 -m venv .venv
-source .venv/bin/activate
-```
-- Windows (PowerShell):
-```
-py -m venv .venv
-.venv\Scripts\Activate.ps1
-```
+proiect-rn-phishing/  
+├── README.md  
+├── docs/  
+│ └── datasets/ # rapoarte EDA  
+├── data/  
+│ ├── raw/ # phishing_ai_generated.csv (date brute AI)  
+│ ├── processed/ # processed_ai_generated.csv (date curățate)  
+│ ├── train/ # train_ai_generated.csv (80%)  
+│ ├── validation/ # validation_ai_generated.csv (10%)  
+│ └── test/ # test_ai_generated.csv (10%)  
+├── src/  
+│ ├── preprocessing/ # preprocess_and_split.py  
+│ ├── data_acquisition/ # generate_ai_data.py  
+│ └── neural_network/ # model.py, train.py (pregătite pentru etapa următoare)  
+├── config/ # preprocessing_config.yaml  
+└── requirements.txt # tensorflow, transformers, pandas, scikit-learn  
 
-—
+## 2\. Descrierea Setului de Date
 
-## 3) Rulare rapidă (3 pași)
-Presupunem că datasetul CSV standardizat există la `data/raw/phishing_combined_reduced.csv`. Dacă ai doar JSON local, vezi Pasul 0.
+### 2.1 Sursa datelor
 
-1. Instalează dependențele
-```
-pip install -r requirements.txt
-```
+- **Origine:** Date sintetice generate folosind Large Language Models (Google Gemini 2.5 Flash).
+- **Modul de achiziție:** ☐ Senzori reali / ☐ Simulare / ☐ Fișier extern / ☑ Generare programatică (Script Python via API).
+- **Perioada / condițiile colectării:** Noiembrie 2025, utilizând prompt-uri diversificate pe topicuri de securitate (bancar, curierat, servicii streaming, HR, crypto).
 
-2. Rulează EDA și actualizează documentația
-```
-python -m src.preprocessing.eda --subset combined_reduced --update-data-readme
-```
-Rezultate: `docs/datasets/EDA_report_combined_reduced.md` + grafice în `docs/datasets/plots/` + rezumat EDA în `data/README.md`.
+### 2.2 Caracteristicile dataset-ului
 
-3. Preprocesare + Split (80/10/10, stratificat)
-```
-python -m src.preprocessing.preprocess_and_split --subset combined_reduced
-```
-Rezultate: CSV-uri în `data/processed/`, `data/train/`, `data/validation/`, `data/test/` + raport `docs/datasets/Preprocess_report_combined_reduced.md`.
+- **Număr total de observații:** ~5,000 (extensibil prin scriptul de generare).
+- **Număr de caracteristici (features):** 3 relevante (text, label, type).
+- **Tipuri de date:** ☐ Numerice / ☑ Categoriale (Text) / ☐ Temporale / ☐ Imagini
+- **Format fișiere:** ☑ CSV / ☐ TXT / ☐ JSON / ☐ PNG / ☐ Altele: \[...\]
 
-—
+### 2.3 Descrierea fiecărei caracteristici
 
-## 0) Dacă ai JSON local și vrei să îl convertești în CSV
-Pune fișierul la `data/raw/combined_reduced.json` (sau în rădăcina proiectului) și rulează:
-```
-python - << 'PY'
-import json, pandas as pd
-from pathlib import Path
-src = Path('data/raw/combined_reduced.json')
-if not src.exists():
-    src = Path('combined_reduced.json')
-print('[INFO] Citire:', src)
-with open(src, 'r', encoding='utf-8') as f:
-    data = json.load(f)
-pd.DataFrame(data)[['text','label']].to_csv('data/raw/phishing_combined_reduced.csv', index=False)
-print('[OK] Scris CSV: data/raw/phishing_combined_reduced.csv | rânduri:', len(data))
-PY
-```
+| **Caracteristică** | **Tip** | **Unitate** | **Descriere** | **Domeniu valori** |
+| --- | --- | --- | --- | --- |
+| text | string | -   | Conținutul mesajului (SMS/Email) | Lungime variabilă |
+| --- | --- | --- | --- | --- |
+| label | categorial | -   | Clasificare (Ținta) | {0: Legitim, 1: Phishing} |
+| --- | --- | --- | --- | --- |
+| type | categorial | -   | Canalul de comunicare | {sms, email} |
+| --- | --- | --- | --- | --- |
 
-—
+**Fișier recomandat:** data/README.md
 
-## 4) Alternativă: descarcă direct de pe Hugging Face (opțional)
-Script: `src/data_acquisition/download_hf_dataset.py`
+## 3\. Analiza Exploratorie a Datelor (EDA) - Sintetic
 
-Exemple:
-```
-python -m src.data_acquisition.download_hf_dataset --subset combined_reduced
-# rezultat: data/raw/phishing_combined_reduced.csv
-```
-Notă pentru `datasets>=3`: dacă apare eroarea „Dataset scripts are no longer supported…”, scriptul folosește `trust_remote_code=True`. Dacă totuși este blocat, poți forța și prin variabilă de mediu:
-- Linux/macOS:
-```
-export HF_DATASETS_TRUST_REMOTE_CODE=1
-```
-- Windows (PowerShell):
-```
-$env:HF_DATASETS_TRUST_REMOTE_CODE="1"
-```
+### 3.1 Statistici descriptive aplicate
 
-Listare config-uri disponibile (dacă subsetul nu e corect):
-```
-python - << 'PY'
-from datasets import get_dataset_config_names
-print(get_dataset_config_names('ealvaradob/phishing-dataset', trust_remote_code=True))
-PY
-```
+- **Lungime text:** Analiza numărului de caractere și cuvinte per mesaj (diferențe SMS vs Email).
+- **Distribuția claselor:** Verificarea echilibrului 50% Phishing / 50% Legitim impus la generare.
+- **Vocabular:** Analiza frecvenței cuvintelor cheie (ex: "urgent", "click", "password").
 
-—
+### 3.2 Analiza calității datelor
 
-## 5) Analiza Exploratorie a Datelor (EDA)
-Script: `src/preprocessing/eda.py`
+- **Detectarea valorilor lipsă:** 0% (Scriptul de generare filtrează automat erorile și rândurile goale).
+- **Detectarea valorilor inconsistente:** Eliminarea mesajelor care nu respectă formatul JSON.
+- **Identificarea duplicatelor:** Verificare strictă pe coloana text pentru a evita memorarea de către model.
 
-Rulare:
-```
-python -m src.preprocessing.eda --subset combined_reduced --update-data-readme
-# sau explicit:
-python -m src.preprocessing.eda --input data/raw/phishing_combined_reduced.csv --update-data-readme
-```
+### 3.3 Probleme identificate
 
-Ce face:
-- calculează statistici (rânduri, lipsuri, duplicate pe text, lungimi text)
-- distribuția etichetelor și grafice
-- scrie raportul în `docs/datasets/EDA_report_{subset}.md`
-- inserează rezumat în `data/README.md` între marcaje speciale
+- \[x\] **Repetitivitate:** AI-ul tinde să repete anumite șabloane ("Dear customer"). _Soluție:_ Rotirea topicurilor în prompt (Banking, Netflix, Crypto, HR).
+- \[x\] **Lungime variabilă:** Diferență mare între lungimea SMS-urilor (<160 caractere) și Email-uri. _Soluție:_ Padding/Truncation la nivelul Tokenizer-ului.
 
-Rezumat EDA actual (subset: combined_reduced):
-- Rânduri: 77677 | Coloane: 2
-- Duplicate după text: 109
-- Distribuție etichete: 0 → 44975 (0.579), 1 → 32702 (0.421)
+## 4\. Preprocesarea Datelor
 
-—
+### 4.1 Curățarea datelor
 
-## 6) Preprocesare + Split (80/10/10, stratificat)
-Script: `src/preprocessing/preprocess_and_split.py`
+- **Eliminare duplicate:** Pe baza conținutului textului.
+- **Tratarea valorilor lipsă:** Eliminarea automată a rândurilor goale.
+- **Normalizare:**
+  - Lowercase (litere mici).
+  - Strip HTML (eliminare tag-uri &lt;br&gt;, &lt;div&gt; din email-uri).
+  - Normalize Whitespace (eliminare spații duble și tab-uri).
 
-Rulare (folosind subset):
-```
-python -m src.preprocessing.preprocess_and_split --subset combined_reduced
-```
-Sau cu input explicit și config:
-```
-python -m src.preprocessing.preprocess_and_split \
-  --input data/raw/phishing_combined_reduced.csv \
-  --config config/preprocessing_config.yaml
-```
+### 4.2 Transformarea caracteristicilor
 
-Operații efectuate (controlate prin config):
-- strip HTML → text (BeautifulSoup)
-- normalize whitespace
-- lowercase (opțional)
-- remove URLs (opțional – implicit off pentru phishing)
-- length clip (opțional)
-- remove duplicates (pe `text`)
-- drop empty text
-- split stratificat: train/validation/test = 0.8/0.1/0.1, seed=42
+- **Tokenizare:** Utilizarea DistilBertTokenizer (WordPiece) specific modelului pre-antrenat.
+- **Encoding:** Conversia textului în input_ids și attention_mask.
+- **Truncation/Padding:** Uniformizarea secvențelor la max_length=128.
 
-Output așteptat:
-- `data/processed/processed_{subset}.csv`
-- `data/train/train_{subset}.csv`
-- `data/validation/validation_{subset}.csv`
-- `data/test/test_{subset}.csv`
-- `docs/datasets/Preprocess_report_{subset}.md`
+### 4.3 Structurarea seturilor de date
 
-—
+**Împărțire realizată:**
 
-## 7) Configurație (config/preprocessing_config.yaml)
-Chei importante:
-- `dataset.subset`: ex. `combined_reduced` | `combined` | `email` | `sms` | `url` | `html`
-- `preprocessing`: `lowercase`, `strip_html`, `remove_urls`, `remove_duplicates`, `normalize_whitespace`
-- `missing_values.drop_empty_text`: eliminare rânduri cu text gol
-- `outliers.length_clip.enabled` + `max_chars`: tăiere texte foarte lungi
-- `split`: rapoarte, `stratify`, `random_seed`, `shuffle`
-- `save_paths`: directoarele pentru output
-- `logging.save_reports` + `reports_dir`: rapoarte Markdown
+- 80% - train
+- 10% - validation
+- 10% - test
 
-—
+**Principii respectate:**
 
-## 8) Structura proiectului
-```
-proiect-rn/
-├── README.md                      # acest document (unic)
-├── config/
-│   └── preprocessing_config.yaml
-├── data/
-│   ├── raw/                       # phishing_{subset}.csv (input CSV standardizat)
-│   ├── processed/
-│   ├── train/
-│   ├── validation/
-│   └── test/
-├── docs/
-│   └── datasets/
-│       ├── EDA_report_{subset}.md
-│       └── plots/
-├── src/
-│   ├── data_acquisition/
-│   │   └── download_hf_dataset.py
-│   ├── preprocessing/
-│   │   ├── eda.py
-│   │   └── preprocess_and_split.py
-│   └── neural_network/            # rezervat pentru etapa următoare
-└── requirements.txt
-```
+- **Stratificare:** Menținerea proporției claselor (Phishing/Legitim) în toate subseturile.
+- **Random Seed:** 42 (pentru reproductibilitate).
+- **Separare:** Datele de test nu sunt văzute niciodată de model la antrenare.
 
-—
+### 4.4 Salvarea rezultatelor preprocesării
 
-## 9) Fișiere rezultate (după rulare)
-- EDA: `docs/datasets/EDA_report_combined_reduced.md`, grafice în `docs/datasets/plots/`
-- Preprocesare: `data/processed/processed_combined_reduced.csv`
-- Split: `data/train/train_combined_reduced.csv`, `data/validation/validation_combined_reduced.csv`, `data/test/test_combined_reduced.csv`
-- Raport preprocesare: `docs/datasets/Preprocess_report_combined_reduced.md`
+- Date preprocesate în data/processed/processed_ai_generated.csv.
+- Seturi train/val/test în foldere dedicate (data/train, data/validation, data/test).
+- Parametrii de preprocesare în config/preprocessing_config.yaml.
 
-—
+## 5\. Fișiere Create în Această Etapă
 
-## 10) Troubleshooting (erori frecvente)
-- datasets v3 „Dataset scripts are no longer supported…”: folosește versiunea curentă de script (are `trust_remote_code=True`) sau setează `HF_DATASETS_TRUST_REMOTE_CODE=1`.
-- Subset invalid: listează config-urile disponibile și alege unul din listă.
-- `FileNotFoundError` la EDA sau Preprocess: verifică existența `data/raw/phishing_{subset}.csv` sau folosește `--input` cu calea corectă; conversia JSON→CSV este în Pasul 0.
-- `ModuleNotFoundError`: reinstalează dependențele asigurându-te că `pip` corespunde cu `python` (ex. `python3 -m pip install -r requirements.txt`).
-- Probleme la salvarea graficelor: asigură-te că există `docs/datasets/plots/` (scriptul îl creează automat) și ai permisiuni de scriere.
+- data/raw/phishing_ai_generated.csv - date brute.
+- data/processed/processed_ai_generated.csv - date curățate.
+- data/train/train_ai_generated.csv - set antrenare.
+- data/validation/validation_ai_generated.csv - set validare.
+- data/test/test_ai_generated.csv - set testare.
+- src/preprocessing/preprocess_and_split.py - codul de preprocesare.
 
-—
+## 6\. Stare Etapă (de completat de student)
 
-## 11) Stare Etapă
-- [x] Structură repository configurată
-- [x] Dataset analizat (EDA realizată)
-- [ ] Date preprocesate
-- [ ] Seturi train/val/test generate
-- [ ] Documentație actualizată complet (după rularea Preprocess & Split)
-
-—
-
-## 12) Ce urmează (Etapa următoare)
-- Antrenarea unui model de clasificare text (ex. DistilBERT) folosind `data/train/`, evaluare pe `validation/test`, logare metrici (accuracy, precision, recall, F1) și salvare model.
-
-Sugerezi modificări sau vrei să rulăm împreună pașii? Urmează exact secțiunea „Rulare rapidă (3 pași)”.
+- \[x\] Structură repository configurată
+- \[x\] Dataset analizat (EDA realizată)
+- \[x\] Date preprocesate
+- \[x\] Seturi train/val/test generate
+- \[x\] Documentație actualizată în README + data/README.md

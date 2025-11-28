@@ -1,41 +1,46 @@
+
 dataset:
-  source: huggingface
-  name: ealvaradob/phishing-dataset
-  subset: combined_reduced  # opțiuni posibile: combined, combined_reduced, email, sms, url, html
-  text_field: text          # va fi confirmat după inspectarea subsetului
-  label_field: label        # poate varia (label/target/class) – se validează în EDA
+  # Numele subsetului (folosit la denumirea fișierelor salvate)
+  subset: "ai_generated"
+
+  # Locația unde scriptul de generare a salvat datele brute
+  input_path: "data/raw/phishing_ai_massive.csv"
 
 preprocessing:
-  lowercase: false          # păstrează cazarea originală; se poate activa ulterior
-  strip_html: true          # curățare HTML → text (unde e cazul)
-  remove_urls: false        # NU elimina URL-urile, sunt informative pentru phishing
-  remove_duplicates: true   # elimină texte duplicate
-  max_length: 512           # pentru modele transformer (tokenizare ulterioară)
+  # Transformă tot textul în litere mici (recomandat pt rețele neuronale)
+  lowercase: true
+
+  # Elimină tag-uri HTML (ex: <br>, <div>) din email-uri
+  strip_html: true
+
+  # Transformă spațiile multiple și tab-urile într-un singur spațiu
   normalize_whitespace: true
 
-missing_values:
-  drop_empty_text: true     # elimină înregistrările fără text
+  # IMPORTANT: Pentru Phishing, URL-urile sunt vitale!
+  # Le lăsăm 'false' ca să nu le șteargă, deoarece modelul trebuie să învețe
+  # că prezența unui link ciudat înseamnă pericol.
+  remove_urls: false
 
-outliers:
-  length_clip:
-    enabled: false
-    max_chars: 2000
+  # Elimină rândurile identice (AI-ul poate repeta uneori același mesaj)
+  remove_duplicates: true
+
+missing_values:
+  # Dacă un mesaj e gol după curățare, îl ștergem
+  drop_empty_text: true
 
 split:
-  train: 0.8
-  validation: 0.1
-  test: 0.1
-  stratify: true            # menține raportul claselor
-  random_seed: 42
-  shuffle: true
+  # Proporții pentru împărțire (Total trebuie să fie 1.0)
+  train_size: 0.8  # 80% pentru antrenare
+  val_size: 0.1    # 10% pentru validare (în timpul antrenării)
+  test_size: 0.1   # 10% pentru testarea finală
 
-save_paths:
-  processed_dir: data/processed
-  train_dir: data/train
-  validation_dir: data/validation
-  test_dir: data/test
+  # Păstrează proporția de Phishing/Legitim în toate seturile
+  stratify: true
+
+  # Număr fix pentru a avea aceleași rezultate de fiecare dată când rulăm
+  random_seed: 42
 
 logging:
-  level: INFO
+  # Unde salvăm rapoartele text despre cum a decurs procesul
   save_reports: true
-  reports_dir: docs/datasets
+  reports_dir: "docs/datasets/"
