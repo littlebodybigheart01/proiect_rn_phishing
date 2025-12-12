@@ -4,7 +4,7 @@ dataset:
   subset: "ai_generated"
 
   # Locația unde scriptul de generare a salvat datele brute
-  input_path: "data/raw/phishing_ai_massive.csv"
+  input_path: "data/raw/multilingualdataset.csv"
 
 preprocessing:
   # Transformă tot textul în litere mici (recomandat pt rețele neuronale)

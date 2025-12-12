@@ -1,0 +1,8 @@
+tensorflow
+transformers
+pandas
+scikit-learn
+pyyaml
+tqdm
+google-generativeai
+tf-keras
