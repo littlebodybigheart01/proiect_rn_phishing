@@ -7,6 +7,9 @@
 **Link Repository GitHub:** https://github.com/littlebodybigheart01/proiect_rn_phishing 
 **Data:** 05.12.2025  
 
+<img width="3072" height="1664" alt="Screenshot From 2025-12-19 10-36-35" src="https://github.com/user-attachments/assets/eb441f75-9900-40f5-a832-0820fea21336" />
+
+
 ---
 
 ## Scopul Etapei 4
@@ -207,6 +210,10 @@ Bash
 streamlit run app.py
 ```
 Aplicația va fi accesibilă la http://localhost:8501.
+
+<img width="3072" height="1664" alt="Screenshot From 2025-12-19 10-37-23" src="https://github.com/user-attachments/assets/c1f41469-2d6e-4005-b8c7-5f67e26ed962" />
+
+<img width="3072" height="1664" alt="Screenshot From 2025-12-19 10-40-35" src="https://github.com/user-attachments/assets/0ad234d0-b5ee-433b-a549-ca4fb4b272c0" />
 
 7. Dependențe (requirements.txt)
 tensorflow: Framework-ul de bază pentru Deep Learning.
